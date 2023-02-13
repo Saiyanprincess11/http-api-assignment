@@ -1,0 +1,17 @@
+{
+  "name": "http-api-assignment",
+  "version": "1.0.0",
+  "description": "Uses Node.js to create a HTTP API with status codes ",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "pretest": "eslint ./src --fix",
+    "test": "echo \"No Tests\""
+  },
+  "author": "Princess-Osaani Hornage",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-plugin-import": "^2.27.5"
+  }
+}

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Our simple HTTP server</title>
+  <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+
+<body>
+  <section id="top">
+    <h3>Status Code Tests</h3>
+    <select id="page">
+      <option value="/success">Success</option>
+      <option value="/badRequest">Bad Request</option>
+      <option value="/unauthorized">Unauthorized</option>
+      <option value="/forbidden">Forbidden</option>
+      <option value="/internal">Internal</option>
+      <option value="/notImplemented">Not Implemented</option>
+      <option value="/notFound">Not Found</option>
+    </select>
+    <select id="type">
+      <option value="application/json">JSON</option>
+      <option value="text/xml">XML</option>
+    </select>
+    <button id="send">Send</button>
+  </section>
+  <section id="content">
+  </section>
+  <script>
+
+    const handleResponse = (response) => {
+    
+      response.text().then((resText) => {
+        //Within this .then() handler, we now have resText as a variable and know we have a response.
+  
+        //Let's grab the Content-Type header from the response. Content-Type defines what type of data
+        //the server sent back to us. It may not match the Accept header we sent to the server.
+        const contentType = response.headers.get('Content-Type');
+  
+        //Grab the content section from the HTML so we can put things on the screen.
+        const content = document.querySelector('#content');
+        content.innerHTML = ""; 
+        //Add a horizontal rule.
+        content.appendChild(document.createElement('hr'));
+  
+        //Create some dom elements to display later
+        const h1 = document.createElement('h1');
+        const p = document.createElement('p');
+        const h2 = document.createElement('h2');
+        const rawData = document.createElement('p');
+  
+        //Add the content type and raw response text to elements
+        //h2.textContent = contentType;
+        //rawData.textContent = resText;
+        console.log(resText); 
+  
+  
+        //If the server sent back json
+        if(contentType === 'application/json') {
+          //Prints title based on code 
+          switch(response.status){
+            case 200: //Success
+              h1.innerHTML = '<b>Success</b>'; 
+            break; 
+            case 400: //Bad Request
+              h1.innerHTML = '<b>Bad Request</b>'; 
+            break; 
+            case 401: //Unauthorized 
+              h1.innerHTML = '<b>Unauthorized</b>'; 
+            break; 
+            case 403: //Forbidden
+              h1.innerHTML = '<b>Forbidden</b>'; 
+            break; 
+            case 500: //Internal
+              h1.innerHTML = '<b>Internal</b>'; 
+            break; 
+            case 501: //Not Implemented
+              h1.innerHTML = '<b>Not Implemented</b>'; 
+            break; 
+            default: //404 Page 
+              h1.innerHTML = '<b>Not Found</b>'
+              break; 
+          }
+          //Parse the json back into a javascript object, and display the data.
+          const parsedResponse = JSON.parse(resText);
+          p.textContent = `Message: ${parsedResponse.message}`;
+        } else if (contentType === 'text/xml') { //If the server sent back xml
+          //Parse the xml into a document and select the data out.
+          const parsedResponse = new window.DOMParser().parseFromString(resText, 'text/xml');
+          h1.textContent = parsedResponse.querySelector('title').textContent;
+          p.textContent = 'Message: ' + parsedResponse.querySelector('message').textContent;
+        }
+  
+        //Add the elements to the screen.
+        content.appendChild(h1);
+        content.appendChild(p);
+        content.appendChild(h2);
+        content.appendChild(rawData);       
+      });
+    };
+  
+    const sendFetchRequest = (url, acceptedType) => {
+      const options = {
+        method: 'GET',
+        headers: {'Accept': acceptedType},
+      }
+  
+      const fetchPromise = fetch(url, options);
+      fetchPromise.then((response) => { handleResponse(response) });
+    };
+  
+    const sendJSON = () => {
+      const selectedPageOption = document.querySelector("#page").selectedIndex; 
+      const fetchPage = document.getElementsByTagName("option")[selectedPageOption].value;
+      sendFetchRequest(fetchPage, 'application/json');
+    }; 
+
+  
+    //For some reason unable to access the options of the second dropdown 
+    //which was causing some bugs with the method 
+    //Was unable to resolve.
+    /*const sendXML = () => {
+      const selectedTypeOption = document.getElementById("type").selectedIndex; 
+      const fetchType = document.getElementsByTagName("option")[selectedTypeOption].value; 
+      console.log(`Selected Type: ${fetchType}`); 
+    }*/
+  
+    const init = () => {
+      //First we grab references to the two buttons in our HTML below.
+      const sendBtn = document.getElementById("send"); 
+
+      //const sendXML = () => sendFetchRequest('/badRequest', 'text/xml');
+  
+      //Now that we have our functions defined above, we can have our click events call them. When someone clicks
+      //the button, the callback function will be called.
+      sendBtn.addEventListener('click', sendJSON);
+      //sendBtn.addEventListener('click', sendXML);
+      //sendBtn.addEventListener('click', sendXML);
+    };
+  
+    window.onload = init;
+  
+  </script>
+</body>
+</html>
